@@ -52,12 +52,13 @@ import six
 
 import collections
 
-import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
 import scipy.stats.mstats
 
+from iris._lazy_data import is_lazy_data
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           RectilinearInterpolator)
@@ -561,7 +562,7 @@ class _Aggregator(object):
             The collapsed cube with its aggregated data payload.
 
         """
-        if isinstance(data_result, biggus.Array):
+        if is_lazy_data(data_result):
             collapsed_cube.lazy_data(data_result)
         else:
             collapsed_cube.data = data_result
@@ -1182,6 +1183,11 @@ def _count(array, function, axis, **kwargs):
                          % type(function))
     return ma.sum(function(array), axis=axis, **kwargs)
 
+def _lazy_count(array, function, axis, **kwargs):
+    if not callable(function):
+        raise ValueError('function must be a callable. Got %s.'
+                         % type(function))
+    return da.sum(function(array), axis=axis, **kwargs)
 
 def _proportion(array, function, axis, **kwargs):
     # if the incoming array is masked use that to count the total number of
@@ -1329,6 +1335,7 @@ def _peak(array, **kwargs):
 # Common partial Aggregation class constructors.
 #
 COUNT = Aggregator('count', _count,
+                   lazy_func=_lazy_count,
                    units_func=lambda units: 1)
 """
 An :class:`~iris.analysis.Aggregator` instance that counts the number
@@ -1395,7 +1402,7 @@ This aggregator handles masked data.
 """
 
 
-MAX = Aggregator('maximum', ma.max)
+MAX = Aggregator('maximum', ma.max, lazy_func=da.nanmax)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the maximum over a :class:`~iris.cube.Cube`, as computed by
@@ -1412,7 +1419,7 @@ This aggregator handles masked data.
 """
 
 
-MEAN = WeightedAggregator('mean', ma.average, lazy_func=biggus.mean)
+MEAN = WeightedAggregator('mean', ma.average, lazy_func=da.nanmean)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1476,7 +1483,7 @@ This aggregator handles masked data.
 """
 
 
-MIN = Aggregator('minimum', ma.min)
+MIN = Aggregator('minimum', ma.min, lazy_func=da.nanmin)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the minimum over a :class:`~iris.cube.Cube`, as computed by
@@ -1611,7 +1618,7 @@ This aggregator handles masked data.
 
 
 STD_DEV = Aggregator('standard_deviation', ma.std, ddof=1,
-                     lazy_func=biggus.std)
+                     lazy_func=da.nanstd)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the standard deviation over a :class:`~iris.cube.Cube`, as
@@ -1678,7 +1685,7 @@ This aggregator handles masked data.
 VARIANCE = Aggregator('variance',
                       ma.var,
                       units_func=lambda units: units * units,
-                      lazy_func=biggus.var, ddof=1)
+                      lazy_func=da.nanvar, ddof=1)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the variance over a :class:`~iris.cube.Cube`, as computed by
