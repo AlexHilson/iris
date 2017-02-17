@@ -370,6 +370,37 @@ def _pyke_kb_engine():
 
     return engine
 
+class MaskedArray(object):
+    def __init__(self, array):
+        self.array = array
+
+    @property
+    def dtype(self):
+        return np.dtype(self.array.dtype)
+
+    @property
+    def shape(self):
+        return self.array.shape
+
+    @property
+    def ndim(self):
+        return self.array.ndim
+
+    @property
+    def fill_value(self):
+        return self.array.fill_value
+
+    def __repr__(self):
+        return 'beep beep'
+
+    def __getitem__(self, keys):
+        data = np.array(self.array[keys], dtype=self.dtype, copy=True)
+        if data.ndim > 0:
+            data[data == self.fill_value] = np.nan
+        elif data == self.fill_value:
+            data = np.array(np.nan)
+
+        return data
 
 class NetCDFDataProxy(object):
     """A reference to the data payload of a single NetCDF file variable."""
@@ -505,7 +536,8 @@ def _load_cube(engine, cf, cf_var, filename):
                          netCDF4.default_fillvals[cf_var.dtype.str[1:]])
     proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
                             filename, cf_var.cf_name, fill_value)
-    data = iris._lazy_data.as_lazy_data(proxy)
+    masked_proxy = MaskedArray(proxy)
+    data = iris._lazy_data.as_lazy_data(masked_proxy)
     cube = iris.cube.Cube(data)
 
     # Reset the pyke inference engine.
