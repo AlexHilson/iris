@@ -120,29 +120,25 @@ def _assert_is_cube(cube):
 def _assert_compatible(cube, other):
     """
     Checks to see if cube.data and another array can be broadcast to
-    the same shape using ``numpy.broadcast_arrays``.
+    the same shape using ``dask.broadcast_shapes``.
 
     """
-    # This code previously returned broadcasted versions of the cube
-    # data and the other array. As numpy.broadcast_arrays does not work
-    # with masked arrays (it returns them as ndarrays) operations
-    # involving masked arrays would be broken.
     try:
-        import pdb; pdb.set_trace()
-        data_view, other_view = da.broadcast_to(cube.lazy_data(), other.shape)
+        broadcast_shape = da.core.broadcast_shapes(
+            cube.lazy_data().shape, other.shape)
     except ValueError as err:
         # re-raise
         raise ValueError("The array was not broadcastable to the cube's data "
-                         "shape. The error message from numpy when "
-                         "broadcasting:\n{}\nThe cube's shape was {} and the "
-                         "array's shape was {}".format(err, cube.shape,
-                                                       other.shape))
+                         "shape. The error message when broadcasting was: "
+                         "\n{}\nThe cube's shape was {} and the "
+                         "array's shape was {}"
+                         .format(err, cube.shape, other.shape))
 
-    if cube.shape != data_view.shape:
+    if cube.shape != broadcast_shape:
         raise ValueError("The array operation would increase the "
                          "dimensionality of the cube. The new cube's data "
-                         "would have had to become: {}".format(
-                             data_view.shape))
+                         "would have had to become: {}"
+                         .format(broadcast_shape))
 
 
 def _assert_matching_units(cube, other, operation_name):
