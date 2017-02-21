@@ -579,7 +579,7 @@ def _binary_op_common(operation_function, operation_name, cube, other,
         other = _broadcast_cube_coord_data(cube, other, operation_name, dim)
     elif isinstance(other, iris.cube.Cube):
         try:
-            da.broadcast_to(cube.lazy_data(), other.lazy_data())
+            da.broadcast_to(cube.lazy_data(), other.lazy_data().shape)
         except ValueError:
             other = iris.util.as_compatible_shape(other, cube).lazy_data()
         else:
@@ -600,6 +600,7 @@ def _binary_op_common(operation_function, operation_name, cube, other,
                             (operation_function.__name__, type(x).__name__,
                              type(other).__name__))
         return ret
+
     return _math_op_common(cube, unary_func, new_unit, in_place)
 
 
