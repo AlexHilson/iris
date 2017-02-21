@@ -33,6 +33,7 @@ import warnings
 import zlib
 
 import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -3020,7 +3021,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 new_cube_data = self.data.copy()
         else:
             # Use the provided data (without copying it).
-            if not isinstance(data, biggus.Array):
+            if not isinstance(data, da.Array):
                 data = np.asanyarray(data)
 
             if data.shape != self.shape:
