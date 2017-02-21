@@ -583,7 +583,10 @@ def _binary_op_common(operation_function, operation_name, cube, other,
         except ValueError:
             other = iris.util.as_compatible_shape(other, cube).lazy_data()
         else:
-            other = other.lazy_data()
+            if cube.has_lazy_data() and not in_place:
+                other = other.lazy_data()
+            else:
+                other = other.data
 
     # don't worry about checking for other data types (such as scalars or
     # np.ndarrays) because _assert_compatible validates that they are broadcast
