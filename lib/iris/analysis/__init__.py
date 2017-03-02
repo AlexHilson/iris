@@ -1396,7 +1396,7 @@ This aggregator handles masked data.
 """
 
 
-MAX = Aggregator('maximum', ma.max, lazy_func=da.array.nanmax)
+MAX = Aggregator('maximum', ma.max, lazy_func=da.nanmax)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the maximum over a :class:`~iris.cube.Cube`, as computed by
@@ -1477,7 +1477,7 @@ This aggregator handles masked data.
 """
 
 
-MIN = Aggregator('minimum', ma.min, lazy_func=da.array.nanmin)
+MIN = Aggregator('minimum', ma.min, lazy_func=da.nanmin)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the minimum over a :class:`~iris.cube.Cube`, as computed by
