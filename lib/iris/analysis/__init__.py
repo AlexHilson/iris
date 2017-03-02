@@ -53,6 +53,7 @@ import six
 import collections
 
 import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
@@ -1395,7 +1396,7 @@ This aggregator handles masked data.
 """
 
 
-MAX = Aggregator('maximum', ma.max)
+MAX = Aggregator('maximum', ma.max, lazy_func=da.array.nanmax)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the maximum over a :class:`~iris.cube.Cube`, as computed by
@@ -1412,7 +1413,7 @@ This aggregator handles masked data.
 """
 
 
-MEAN = WeightedAggregator('mean', ma.average, lazy_func=biggus.mean)
+MEAN = WeightedAggregator('mean', ma.average, lazy_func=da.nanmean)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1476,7 +1477,7 @@ This aggregator handles masked data.
 """
 
 
-MIN = Aggregator('minimum', ma.min)
+MIN = Aggregator('minimum', ma.min, lazy_func=da.array.nanmin)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the minimum over a :class:`~iris.cube.Cube`, as computed by
